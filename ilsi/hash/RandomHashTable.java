@@ -1,34 +1,15 @@
 package ilsi.hash;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 /**
  * The classe RandomHashTable represent a hash table with random hashing.
- * The design of the Family of hash functions can based on : "multiply-shift".
- *
- * <p>The following example create a hash table of (int, String) pairs :</p>
- * <pre>
- *      RandomHashTable<String, Integer> numbers = new RandomHashTable<String, Integer>();
- *      numbers.insert("ISLI", 25);
- *      numbers.insert("GMS", 60);
- *      numbers.insert("GME", 40);
- *      numbers.insert("API", 450);
- * 
- * </pre>
- * 
- * <p>To retrieve a number, use the following code:</p>
- * <pre>
- *      Integer n = numbers.search("API");
- *      if (n != null) System.out.println("API : " + n);
- * </pre>
+ * The design of the Family of hash functions is based on multiply-shift with random parameters.
  */
 public class RandomHashTable<K, V> extends StaticHashTable<K, V> {
-      protected long p;
-      protected long a;
-      protected long b;
-
+    protected long p;
+    protected long randomA;
+    protected long randomB;
 
     /**
      * Constructs a new empty RandomHashTable with a default initial capacity (16) 
@@ -36,13 +17,11 @@ public class RandomHashTable<K, V> extends StaticHashTable<K, V> {
      */
     public RandomHashTable() {
         super(16);
-        this.p=1000000007;
+        this.p = 1000000007L; // Large prime number
         Random rand = new Random();
-        this.a = rand.nextInt((int)p-1)+1;
-        this.b = rand.nextInt((int)p);
-        // TO DO
+        this.randomA = rand.nextInt((int)p - 1) + 1; // a in range [1, p-1]
+        this.randomB = rand.nextInt((int)p);          // b in range [0, p-1]
     }
-
 
     /**
      * Constructs a new empty RandomHashTable with the specified initial capacity 
@@ -50,16 +29,26 @@ public class RandomHashTable<K, V> extends StaticHashTable<K, V> {
      * @param capacity initial capacity of the hash table
      */
     public RandomHashTable(int capacity) {
-         super(capacity);
-         this.p=1000000007;
-         Random rand = new Random();
-         this.a = rand.nextInt((int)p-1)+1;
-         this.b = rand.nextInt((int)p);
-        // TO DO
+        super(capacity);
+        this.p = 1000000007L; // Large prime number
+        Random rand = new Random();
+        this.randomA = rand.nextInt((int)p - 1) + 1; // a in range [1, p-1]
+        this.randomB = rand.nextInt((int)p);          // b in range [0, p-1]
     }
 
-
-    
-    
-
+    /**
+     * Hashes a key to a corresponding index using random hash function
+     * Uses universal hashing: h(k) = ((a*k + b) mod p) mod m
+     * @param key the key to be hashed
+     * @return int - the hash value
+     */
+    @Override
+    protected int hash(K key) {
+        int k = 0;
+        if (key != null) k = Math.abs(key.hashCode());
+        
+        // Universal hashing formula: ((a*k + b) mod p) mod m
+        long hash = ((randomA * k + randomB) % p) % m;
+        return (int) hash;
+    }
 }
